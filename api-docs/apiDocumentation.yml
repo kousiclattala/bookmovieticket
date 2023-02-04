@@ -1,0 +1,54 @@
+openapi: 3.0.1
+info:
+  title: Book Movie Ticket
+  description: API for booking a movie Ticket
+  version: 0.0.1
+  contact:
+    name: Kousic Lattala
+    email: kousiclattala112@gmail.com
+
+servers:
+  - url: http:localhost:3500
+    description: Local Server
+
+tags:
+  - name: Test Routes
+
+paths:
+  /api/v1/testroute:
+    
+    get: 
+      tags:
+        - "Test Routes"
+      summary: Test Route
+      description: Test route to check whether server is responding or not
+      responses:
+        '200':
+          description: Successful Operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/response'
+
+
+components:
+  schemas:
+    response: 
+      type: object
+      properties:
+        status:
+          type: boolean
+          example: true
+        statusCode:
+          type: number
+          example: 200
+        text:
+          type: string
+          example: Server is responding
+        data:
+          type: string
+          example: Any data to send for the end user
+        responseDateTime:
+          type: string
+          example: '2023-02-04:04:04:04Z'
+      
