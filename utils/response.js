@@ -3,7 +3,7 @@ const response = (status, code, text, data) => {
     status: status,
     statusCode: code,
     text: text,
-    data: data,
+    data,
     responseDateTime: new Date(),
   };
 };

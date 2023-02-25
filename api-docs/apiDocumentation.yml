@@ -7,12 +7,14 @@ info:
     name: Kousic Lattala
     email: kousiclattala112@gmail.com
 
-servers:
-  - url: http:localhost:3500
-    description: Local Server
+# servers:
+#   - url: http:localhost:3500
+#     description: Local Server
 
 tags:
   - name: Test Routes
+  - name: User Routes
+  - name: Booking Routes
 
 paths:
   /api/v1/testroute:
@@ -30,6 +32,335 @@ paths:
               schema:
                 $ref: '#/components/schemas/response'
 
+  /api/v1/user/signin:
+    post:
+      tags:
+        - "User Routes"
+      summary: User Signin
+      description: Used this route to signin the user
+
+      requestBody: 
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+
+      responses:
+        '200':
+          description: When user Signed in Successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/signinResponse'
+
+        '400':
+          description: Error in signin user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errResponse'
+
+  /api/v1/user/signup:
+    post:
+      tags:
+        - "User Routes"
+      summary: User Signup
+      description: Used this route to signup the user
+
+      requestBody: 
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+                name:
+                  type: string
+                phoneNumber:
+                  type: string
+
+      responses:
+        '200':
+          description: When user Signed up Successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/signinResponse'
+
+        '400':
+          description: Error in signing up user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errResponse'
+
+  /api/v1/user/requestOtp:
+    post:
+      tags:
+        - "User Routes"
+      summary: Requesting OTP
+      description: Used this route to request otp for the user to signin/signup with mobile number
+
+      requestBody: 
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                
+                phoneNumber:
+                  type: string
+
+      responses:
+        '200':
+          description: When user requested otp for signin/signup with mobile number
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/signinResponse'
+
+        '400':
+          description: Error in requesting otp
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errResponse'
+
+  /api/v1/user/verifyOtp:
+    post:
+      tags:
+        - "User Routes"
+      summary: Verifying OTP
+      description: Used this route to verify otp for the user to signin/signup with mobile number
+
+      requestBody: 
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties: 
+                phoneNumber:
+                  type: string
+                otp:
+                  type: string
+
+      responses:
+        '200':
+          description: When user otp is verified for signin/signup with mobile number
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/signinResponse'
+
+        '400':
+          description: Error in verifying otp
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errResponse'
+
+  /api/v1/user/forgotPassword:
+    post:
+      tags:
+        - "User Routes"
+      summary: Forgot Password
+      description: Used this route to verify whether user is signed up or not to send forgot password link
+
+      requestBody: 
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+
+      responses:
+        '200':
+          description: When user is present and forgotpassword link is sent to the email
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/response'
+
+        '400':
+          description: Error in sending forgot password
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errResponse' 
+
+
+  /api/v1/user/resetPassword:
+    post:
+      tags:
+        - "User Routes"
+      summary: Reset Password
+      description: Used this route to reset the login password of user
+
+      requestBody: 
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+
+      responses:
+        '200':
+          description: when user successfully resets his/her password
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/response'
+
+        '400':
+          description: Error in resetting user password
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errResponse'  
+
+
+  /api/v1/user/updateUserProfile:
+    post:
+      tags:
+        - "User Routes"
+      summary: Update user details
+      description: Used this route to update the user details
+
+      security:
+        - bearerAuth: []
+      
+
+      requestBody: 
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                name:
+                  type: string
+                phoneNumber:
+                  type: string
+
+      responses:
+        '200':
+          description: when user successfully changed his/her details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/user'
+
+        '400':
+          description: Error in resetting user password
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errResponse'
+
+  /api/v1/user/getDetails:
+    get:
+      tags:
+        - "User Routes"
+      summary: Get user details
+      description: Used this route to the user details
+
+      security:
+        - bearerAuth: []
+
+      responses:
+        '200':
+          description: when user details successfully fetched
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/user'
+
+        '400':
+          description: Error in getting user details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errResponse' 
+
+  /api/v1/user/getAllBookings:
+    get:
+      tags:
+        - "Booking Routes"
+      summary: Get user all bookings
+      description: Used this route to get user all bookings 
+
+      security:
+        - bearerAuth: []
+
+      responses:
+        '200':
+          description: when user booking details successfully fetched
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/booking'
+
+        '400':
+          description: Error in getting user booking details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errResponse'   
+
+  /api/v1/user/getSingleBooking/{bookingId}:
+    get:
+      tags:
+        - "Booking Routes"
+      summary: Get user all bookings
+      description: Used this route to get user all bookings 
+
+      security:
+        - bearerAuth: []
+
+      parameters:
+        - name: bookingId
+          in: path
+          description: Booking ID
+          required: true
+          schema:
+            type: string
+
+      responses:
+        '200':
+          description: when user booking details successfully fetched
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/booking'
+
+        '400':
+          description: Error in getting user booking details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errResponse'                
 
 components:
   schemas:
@@ -45,10 +376,140 @@ components:
         text:
           type: string
           example: Server is responding
-        data:
-          type: string
-          example: Any data to send for the end user
         responseDateTime:
           type: string
           example: '2023-02-04:04:04:04Z'
+
+    errResponse: 
+      type: object
+      properties:
+        status:
+          type: boolean
+          example: false
+        statusCode:
+          type: number
+          example: 400
+        text:
+          type: string
+          example: Server is not responding
+        responseDateTime:
+          type: string
+          example: '2023-02-04:04:04:04Z'
+
+    user: 
+      type: object
+      properties:
+        _id: 
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+        mobileNumber:
+          type: string
+        otp:
+          type: string
+        role: 
+          type: string
+        bookings:
+          type: array
+        reviews:
+          type: array
+        createdAt:
+          type: string
+          example: '2023-02-04:04:04:04Z'
+        updatedAt:
+          type: string
+          example: '2023-02-04:04:04:04Z'
+
+    movie: 
+      type: object
+      properties:
+        _id: 
+          type: string
+        movieName:
+          type: string
+        cast:
+          type: object
+          properties:
+            name:
+              type: string
+            profilePicture:
+              type: string
+            role:
+              type: string
+        locations:
+          type: array
+        languages:
+          type: array
+        description: 
+          type: string
+        votes:
+          type: number
+        createdAt:
+          type: string
+          example: '2023-02-04:04:04:04Z'
+        updatedAt:
+          type: string
+          example: '2023-02-04:04:04:04Z'
+
+    
+
+    booking: 
+      type: object
+      properties:
+        _id: 
+          type: string
+        movieDetails:
+          $ref: '#/components/schemas/movie'
+        ticket:
+          type: object
+          properties:
+            theater: 
+              type: object
+              example: Theater schema
+            timing: 
+              type: string
+            date:
+              type: string
+            seats:
+              type: array
+        user:
+          $ref: '#/components/schemas/user'
+        amount:
+          type: string
+        subtotal: 
+          type: string
+        totaltax:
+          type: array
+        discountAmount:
+          type: array
+        createdAt:
+          type: string
+          example: '2023-02-04:04:04:04Z'
+        updatedAt:
+          type: string
+          example: '2023-02-04:04:04:04Z'
+
+    signinResponse: 
+      type: object
+      properties:
+        
+        data:
+          type: object
+          properties:
+            user:
+              $ref: '#/components/schemas/user'
+            token: 
+              type: string
+            res:
+              $ref: '#/components/schemas/response'
+
+
+  securitySchemes:
+    bearerAuth:            # arbitrary name for the security scheme
+      type: http
+      scheme: bearer
+      bearerFormat: JWT    # optional, arbitrary value for documentation purposes
+
       
