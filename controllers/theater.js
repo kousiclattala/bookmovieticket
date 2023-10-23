@@ -1,4 +1,5 @@
 const Theater = require("../models/theater");
+const Seat = require("../models/seat");
 const logger = require("../utils/logger");
 const { response } = require("../utils/response");
 
@@ -14,19 +15,45 @@ exports.getAllTheater = async (req, res) => {
 
 exports.addTheater = async (req, res) => {
   try {
-    const { theaterName, theaterLocation, noOfScreens, theaterLayout } =
+    const { theaterName, theaterLocation, noOfScreens, classTypes, layout } =
       req.body;
+
+    const types = classTypes.map((clas) => clas.toLowerCase());
+
+    const theaterSeats = [];
 
     const theater = await Theater.create({
       theaterName,
       theaterLocation,
       noOfScreens,
-      theaterLayout,
+      classTypes: types,
     });
 
-    res
-      .status(200)
-      .json(response(true, 200, "Theater Added Successfully", theater));
+    logger.info(theater);
+
+    layout.map(async (item, indx) => {
+      item.seats.map((seat) => {
+        seat.numbers.map(async (n, idx) => {
+          const st = await Seat.create({
+            theaterId: theater._id,
+            seatNo: n,
+            price: item.price,
+            class: item.class.toLowerCase(),
+          });
+
+          theater.theaterLayout.push(st._id);
+        });
+      });
+
+      if (indx === layout.length - 1) {
+        logger.info(true);
+        theater.save().then((theat) => {
+          res
+            .status(200)
+            .json(response(true, 200, "Theater Added Successfully", theat));
+        });
+      }
+    });
   } catch (error) {
     res
       .status(400)
@@ -34,6 +61,54 @@ exports.addTheater = async (req, res) => {
   }
 };
 
+exports.updateTheaterLayout = async (req, res) => {
+  try {
+    const { layout, theaterId } = req.body;
+
+    const theaterLayout = [];
+    const classSeats = [];
+    const classSeatNumbers = [];
+
+    layout.map((item) => {
+      item.seats.map((seat) => {
+        seat.numbers.map(async (n, idx) => {
+          const st = await Seat.create({
+            theaterId,
+            seatNo: n,
+            price: item.price,
+            class: item.class,
+          });
+          classSeatNumbers.push(st);
+        });
+      });
+    });
+
+    logger.info(theaterLayout);
+
+    const theater = await Theater.findByIdAndUpdate(
+      { _id: theaterId },
+      {
+        theaterLayout,
+      },
+      {
+        new: true,
+      }
+    );
+
+    res
+      .status(200)
+      .json(
+        response(true, 200, "Theater layout updated successfully", theater)
+      );
+  } catch (error) {
+    logger.error(error);
+    res
+      .status(422)
+      .json(response(false, 422, "Error in updating theater layout", error));
+  }
+};
+
+//TODO: need to work on seating sort response
 exports.updateMovieStreamingInTheater = async (req, res) => {
   try {
     const {
@@ -44,13 +119,20 @@ exports.updateMovieStreamingInTheater = async (req, res) => {
       streamingTimings,
     } = req.body;
 
+    const updateResult = await Seat.updateMany(
+      { theaterId },
+      { movieId: movieDetails }
+    );
+
+    const seats = await Seat.find({ theaterId });
+
     const streaming = {};
 
     const timingsObj = {};
 
     streamingTimings.forEach((t) =>
       Object.assign(timingsObj, {
-        [t]: [],
+        [t]: seats.sort(),
       })
     );
 
@@ -97,34 +179,38 @@ exports.updateMovieStreamingInTheater = async (req, res) => {
   }
 };
 
+//TODO: need to work on seating arrangement response
 exports.getTheaterSeatingArrangement = async (req, res) => {
   try {
-    const { theaterId, showDate, showTiming, movieId } = req.body;
+    const { theaterId } = req.body;
 
     const theater = await Theater.findById({ _id: theaterId });
 
-    const movies = theater.moviesStreaming;
+    const layout = await Seat.find({ theaterId });
 
-    movies.map((m) => {
-      if (m.movieDetails == movieId) {
-        var showBookings = m.showBookingDatesTimings;
+    const arrangement = {};
 
-        var date = Object.keys(showBookings).filter((k) => {
-          if (k == showDate) {
-            return k;
-          }
-        });
+    var seats = [];
 
-        var showdate = showBookings[date];
+    theater.classTypes.map((type) => {
+      layout.map((lay) => {
+        // logger.warn(type == lay.class);
 
-        var data = {
-          layout: theater.theaterLayout,
-          bookedSeats: showdate,
-        };
+        if (type == lay.class) {
+          seats.push(lay);
+        }
+      });
 
-        res.status(200).json(response(true, 200, "Seats details", data));
-      }
+      Object.assign(arrangement, {
+        [type]: {
+          seats: seats.sort(),
+          row: "A",
+        },
+      });
+      seats = [];
     });
+
+    res.status(200).json(response(true, 200, "Theater seating", arrangement));
   } catch (error) {
     logger.error(error);
     res
@@ -183,5 +269,101 @@ exports.getTheatersBasedOnMovieAndLocation = async (req, res) => {
           error
         )
       );
+  }
+};
+
+exports.getTheaterDetails = async (req, res) => {
+  try {
+    const { theaterId } = req.params;
+
+    if (!theaterId) {
+      return res
+        .status(404)
+        .json(response(false, 404, "Theater Id is missing"));
+    }
+
+    const theater = await Theater.findById({ _id: theaterId });
+
+    res
+      .status(200)
+      .json(response(true, 200, "Theater details fetched", theater));
+  } catch (error) {
+    res
+      .status(422)
+      .json(response(false, 422, "Error in getting theater details", error));
+  }
+};
+
+exports.removeTheaterDetails = async (req, res) => {
+  try {
+    const { theaterId } = req.params;
+
+    if (!theaterId) {
+      return res
+        .status(404)
+        .json(response(false, 404, "Theater Id is missing"));
+    }
+
+    const theater = await Theater.findByIdAndRemove({ _id: theaterId });
+    const seats = await Seat.deleteMany({ theaterId });
+
+    res
+      .status(200)
+      .json(response(true, 200, "Theater details deleted successfully"));
+  } catch (error) {
+    res
+      .status(422)
+      .json(response(false, 422, "Error in deleting theater details", error));
+  }
+};
+
+exports.updateTheaterDetails = async (req, res) => {
+  try {
+    const { theaterId } = req.params;
+
+    if (!theaterId) {
+      return res
+        .status(404)
+        .json(response(false, 404, "Theater Id is missing"));
+    }
+
+    const theater = await Theater.findByIdAndUpdate(
+      { _id: theaterId },
+      req.body,
+      {
+        new: true,
+      }
+    );
+
+    res
+      .status(200)
+      .json(
+        response(true, 200, "Theater details updated successfully", theater)
+      );
+  } catch (error) {
+    res
+      .status(422)
+      .json(response(false, 422, "Error in updating theater details", error));
+  }
+};
+
+exports.updateTheaterSeating = async (req, res) => {
+  try {
+    const { theaterId } = req.params;
+
+    const updateRes = await Seat.updateMany(
+      { theaterId },
+      {
+        bookedDatesAndTimes: {},
+      }
+    );
+
+    res
+      .status(200)
+      .json(response(true, 200, "Theater seating updated successfully"));
+  } catch (error) {
+    res
+      .status(422)
+      .json(response(false, 422, "Error in updating theater seating", error));
   }
 };

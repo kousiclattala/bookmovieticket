@@ -51,6 +51,14 @@ const bookingSchema = new mongoose.Schema(
       required: true,
       default: "0",
     },
+    paymentStatus: {
+      type: String,
+      default: "null",
+    },
+    bookingStatus: {
+      type: String,
+      default: "null",
+    },
   },
   {
     timestamps: true,

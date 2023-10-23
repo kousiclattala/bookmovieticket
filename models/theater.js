@@ -21,6 +21,11 @@ const theaterSchema = new mongoose.Schema(
       required: [true, "No of screens is required"],
       default: 1,
     },
+    classTypes: {
+      type: Array,
+      default: ["Recliners"],
+      lowercase: true,
+    },
     moviesStreaming: [
       {
         movieDetails: {
@@ -51,16 +56,13 @@ const theaterSchema = new mongoose.Schema(
         },
       },
     ],
-    theaterLayout: {
-      type: Array,
-      default: [
-        {
-          rowName: "A",
-          price: "299",
-          seats: [],
-        },
-      ],
-    },
+    theaterLayout: [
+      {
+        type: mongoose.Schema.ObjectId,
+        ref: "Seat",
+      },
+    ],
+
     ratings: {
       type: Number,
       default: 0,

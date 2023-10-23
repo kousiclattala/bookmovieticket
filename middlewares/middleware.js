@@ -87,3 +87,29 @@ exports.isAdmin = async (req, res, next) => {
     res.status(400).json(response(false, 400, "Something went wrong", error));
   }
 };
+
+exports.isValidToken = async (req, res) => {
+  try {
+    const token = req.header("Authorization").replace("Bearer ", "");
+
+    jwt.verify(token, process.env.TOKEN_SECRET, (err, decode) => {
+      if (err) {
+        return res.status(400).json(
+          response(false, 400, "Token is expired", {
+            isValidToken: false,
+          })
+        );
+      } else {
+        return res.status(200).json(
+          response(true, 200, "Token is valid", {
+            isValidToken: true,
+          })
+        );
+      }
+    });
+  } catch (error) {
+    res
+      .status(400)
+      .json(response(false, 400, "Error in validating token", error));
+  }
+};

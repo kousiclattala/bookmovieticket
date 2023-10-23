@@ -5,6 +5,11 @@ const {
   updateMovieStreamingInTheater,
   getTheaterSeatingArrangement,
   getTheatersBasedOnMovieAndLocation,
+  updateTheaterLayout,
+  getTheaterDetails,
+  removeTheaterDetails,
+  updateTheaterDetails,
+  updateTheaterSeating,
 } = require("../controllers/theater");
 const {
   isLoggedIn,
@@ -17,6 +22,8 @@ const router = express.Router();
 router.get("/getAllTheaters", isLoggedIn, isSuperAdmin, getAllTheater);
 
 router.post("/addTheater", isLoggedIn, isAdmin, addTheater);
+
+router.put("/updateTheaterLayout", isLoggedIn, isAdmin, updateTheaterLayout);
 
 router.put(
   "/updateMovieStreamingInTheater",
@@ -36,5 +43,12 @@ router.post(
   isLoggedIn,
   getTheatersBasedOnMovieAndLocation
 );
+
+router
+  .route("/theater/:theaterId")
+  .get(isLoggedIn, getTheaterDetails)
+  .post(isLoggedIn, isAdmin, updateTheaterDetails)
+  .put(isLoggedIn, isAdmin, updateTheaterSeating)
+  .delete(isLoggedIn, isSuperAdmin, removeTheaterDetails);
 
 module.exports = router;

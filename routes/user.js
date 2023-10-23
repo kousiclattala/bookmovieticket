@@ -17,6 +17,7 @@ const {
   isLoggedIn,
   isSuperAdmin,
   isAdmin,
+  isValidToken,
 } = require("../middlewares/middleware");
 const { response } = require("../utils/response");
 const router = express.Router();
@@ -48,6 +49,8 @@ router.get(
 router.get("/user/getAllBookings", isLoggedIn, getAllBookings);
 
 router.get("/getSingleBooking/:bookingId", isLoggedIn, getSingleBooking);
+
+router.get("/verifyToken", isValidToken);
 
 //* superadmin routes
 router.get(

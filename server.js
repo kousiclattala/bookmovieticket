@@ -9,17 +9,13 @@ const swaggerUi = require("swagger-ui-express");
 const YAML = require("yamljs");
 const openApiDocumentation = YAML.load("./api-docs/apiDocumentation.yml");
 
-const userRoute = require("./routes/user");
-const movieRoute = require("./routes/movie");
-const theaterRoute = require("./routes/theater");
+const routes = require("./routes/index");
 
 //* middlewares
 app.use(express.json());
 
 //* routes middleware
-app.use("/api/v1", userRoute);
-app.use("/api/v1", movieRoute);
-app.use("/api/v1", theaterRoute);
+app.use("/", routes);
 
 //* open api documentation middleware
 app.use(
